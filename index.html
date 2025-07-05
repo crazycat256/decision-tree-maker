@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decision Tree Maker</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js" integrity="sha512-vc58qvvBdrDR4etbxMdlTt4GBQk1qjvyORR2nrsPsFPyrs+/u5c3+1Ct6upOgdZoIl7eq6k3a1UPDSNAQi/32A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script defer src="js/history.js"></script>
+    <script defer src="js/geometry.js"></script>
+    <script defer src="js/inline-editor.js"></script>
+    <script defer src="js/tree-operations.js"></script>
+    <script defer src="js/node-operations.js"></script>
+    <script defer src="js/link-operations.js"></script>
+    <script defer src="js/ui-handlers.js"></script>
+    <script defer src="js/app.js"></script>
+</head>
+
+<body>
+    <header>
+        <h1><a href=".">Decision Tree Maker</a></h1>
+        <nav class="controls">
+            <div class="control-group history-controls">
+                <button class="btn btn-icon" id="undoBtn" title="Undo (Ctrl+Z)"><i class="fas fa-undo"></i></button>
+                <button class="btn btn-icon" id="redoBtn" title="Redo (Ctrl+Y)"><i class="fas fa-redo"></i></button>
+            </div>
+            <div class="control-separator"></div>
+            <div class="control-group file-controls">
+                <button class="btn" id="newTreeBtn"><i class="fas fa-plus"></i> New</button>
+                <button class="btn" id="saveTreeBtn"><i class="fas fa-save"></i> Save</button>
+                <button class="btn" id="loadTreeBtn"><i class="fas fa-folder-open"></i> Load</button>
+                <button class="btn" id="loadFromFileBtn"><i class="fas fa-upload"></i> Import</button>
+                <button class="btn" id="exportTreeBtn"><i class="fas fa-download"></i> Export</button>
+                <button class="btn" id="exportPngBtn"><i class="fas fa-image"></i> Export PNG</button>
+            </div>
+        </nav>
+        <div class="github-link">
+            <a href="https://github.com/crazycat256/decision-tree-maker" target="_blank" rel="noopener" title="View on GitHub">
+                <i class="fab fa-github"></i>
+            </a>
+        </div>
+    </header>
+
+    <main id="tree-container">
+        <div class="zoom-controls">
+            <button class="zoom-btn" id="zoomInBtn" title="Zoom in"><i class="fas fa-search-plus"></i></button>
+            <button class="zoom-btn" id="zoomOutBtn" title="Zoom out"><i class="fas fa-search-minus"></i></button>
+            <button class="zoom-btn" id="resetZoomBtn" title="Reset"><i class="fas fa-home"></i></button>
+        </div>
+    </main>
+
+    <div class="context-menu" id="contextMenu">
+        <button class="context-btn" id="renameNodeBtn"><i class="fas fa-edit"></i> Rename</button>
+        <button class="context-btn danger" id="deleteNodeBtn"><i class="fas fa-trash"></i> Delete</button>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="newTreeModal">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus"></i> New Tree</h3>
+                <button class="modal-close" data-modal="newTreeModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-content">
+                <p>Creating a new tree will replace the current tree and all unsaved changes will be lost.</p>
+                <div class="form-group">
+                    <label for="newTreeTitle">Tree Title:</label>
+                    <input type="text" id="newTreeTitle" placeholder="Enter the tree title..." required>
+                </div>
+                <div class="form-group">
+                    <label for="newTreeRootQuestion">Root Question:</label>
+                    <input type="text" id="newTreeRootQuestion" placeholder="Enter the root question..." required>
+                </div>
+                <p><strong>Are you sure you want to continue?</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-modal="newTreeModal">Cancel</button>
+                <button class="btn btn-primary" id="confirmNewTree">Create New Tree</button>
+            </div>
+        </div>
+
+        <div class="modal" id="saveTreeModal">
+            <div class="modal-header">
+                <h3><i class="fas fa-save"></i> Save Tree</h3>
+                <button class="modal-close" data-modal="saveTreeModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-content">
+                <div class="form-group">
+                    <label for="saveTreeName">Tree Name:</label>
+                    <input type="text" id="saveTreeName" placeholder="Enter tree name..." required>
+                    <div id="nameWarning" class="name-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        A tree with this name already exists. It will be overwritten.
+                    </div>
+                </div>
+                <div class="saved-trees-list">
+                    <h4>Existing Saved Trees:</h4>
+                    <div id="savedTreesList"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-modal="saveTreeModal">Cancel</button>
+                <button class="btn btn-primary" id="confirmSaveTree">Save Tree</button>
+            </div>
+        </div>
+
+        <div class="modal" id="loadTreeModal">
+            <div class="modal-header">
+                <h3><i class="fas fa-folder-open"></i> Load Tree</h3>
+                <button class="modal-close" data-modal="loadTreeModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-content">
+                <div class="load-option">
+                    <h4><i class="fas fa-database"></i> Select a Saved Tree</h4>
+                    <div id="loadTreesList"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-modal="loadTreeModal">Cancel</button>
+            </div>
+        </div>
+
+        <div class="modal" id="fileConfirmationModal">
+            <div class="modal-header">
+                <h3><i class="fas fa-folder-open"></i> Confirm File Load</h3>
+                <button class="modal-close" data-modal="fileConfirmationModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-content">
+                <div class="file-info">
+                    <div class="file-details">
+                        <p><strong>File:</strong> <span id="selectedFileName"></span></p>
+                        <p><strong>Title:</strong> <span id="selectedFileTitle"></span></p>
+                        <p><strong>Nodes:</strong> <span id="selectedFileNodes"></span></p>
+                        <p><strong>Links:</strong> <span id="selectedFileLinks"></span></p>
+                    </div>
+                </div>
+                <p><strong>Are you sure you want to continue?</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-modal="fileConfirmationModal">Cancel</button>
+                <button class="btn btn-primary" id="confirmFileLoad">Load File</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
