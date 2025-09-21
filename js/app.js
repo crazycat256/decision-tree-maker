@@ -182,7 +182,9 @@ function updateLinks() {
 
     const linkLabelEnter = linkLabels.enter()
         .append("foreignObject")
-        .attr("class", "link-label")
+        .attr("class", "link-label");
+
+    linkLabelEnter
         .on("click", function (event, d) {
             event.stopPropagation();
             selectedLink = d;
@@ -208,6 +210,25 @@ function updateLinks() {
         .property("readOnly", true);
 
     const linkLabelUpdate = linkLabelEnter.merge(linkLabels);
+
+    linkLabelUpdate
+        .on("click", function (event, d) {
+            event.stopPropagation();
+            selectedLink = d;
+            selectedNode = null;
+            updateSelectionVisuals();
+        })
+        .on("dblclick", function (event, d) {
+            event.stopPropagation();
+            editLinkLabelInline(this, d);
+        })
+        .on("contextmenu", function(event, d) {
+            event.preventDefault();
+            selectedLink = d;
+            selectedNode = null;
+            updateSelectionVisuals();
+            showContextMenu(event);
+        });
 
     linkLabelUpdate
         .attr("x", d => {

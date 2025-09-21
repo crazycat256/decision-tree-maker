@@ -1,6 +1,7 @@
 class InlineEditor {
     constructor() {
         this.activeEditingElement = null;
+        this.originalHandlers = new Map();
     }
 
     cancelAllEditing() {
@@ -16,6 +17,9 @@ class InlineEditor {
         if (input.empty()) return;
 
         this.activeEditingElement = foreignObject;
+        
+        const originalDblClickHandler = foreignObject.on('dblclick');
+        this.originalHandlers.set(foreignObject.node(), originalDblClickHandler);
         
         buttonsGroup.selectAll(".node-buttons").classed('node-buttons-visible', false);
         
@@ -98,7 +102,13 @@ class InlineEditor {
             .on('keydown', null)
             .on('input', null);
 
-        foreignObject.on('dblclick', null);
+        const originalHandler = this.originalHandlers.get(foreignObject.node());
+        if (originalHandler) {
+            foreignObject.on('dblclick', originalHandler);
+            this.originalHandlers.delete(foreignObject.node());
+        } else {
+            foreignObject.on('dblclick', null);
+        }
 
         setTimeout(() => {
             if (window.getSelection) {
