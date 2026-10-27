@@ -238,7 +238,7 @@ function loadCurrentTree() {
         if (savedTree) {
             const treeData = JSON.parse(savedTree);
             
-            if (treeData.nodes && Array.isArray(treeData.nodes) && treeData.nodes.length > 0) {
+            if (Array.isArray(treeData.nodes)) {
                 graphData = {
                     title: treeData.title || "Decision Tree",
                     nodes: treeData.nodes,

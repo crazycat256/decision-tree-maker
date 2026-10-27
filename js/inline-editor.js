@@ -2,11 +2,12 @@ class InlineEditor {
     constructor() {
         this.activeEditingElement = null;
         this.originalHandlers = new Map();
+        this.onComplete = null;
     }
 
     cancelAllEditing() {
         if (this.activeEditingElement) {
-            this.exitEditMode(this.activeEditingElement, false);
+            this.exitEditMode(this.activeEditingElement, false, null, this.onComplete);
         }
     }
 
@@ -17,6 +18,7 @@ class InlineEditor {
         if (input.empty()) return;
 
         this.activeEditingElement = foreignObject;
+        this.onComplete = onComplete;
         
         const originalDblClickHandler = foreignObject.on('dblclick');
         this.originalHandlers.set(foreignObject.node(), originalDblClickHandler);
@@ -61,6 +63,7 @@ class InlineEditor {
         setupListeners();
 
         setTimeout(() => {
+            if (this.activeEditingElement !== foreignObject) return;
             const inputNode = input.node();
             if (inputNode) {
                 inputNode.focus();
@@ -125,6 +128,7 @@ class InlineEditor {
         }
 
         this.activeEditingElement = null;
+        this.onComplete = null;
 
         if (onComplete) {
             onComplete();

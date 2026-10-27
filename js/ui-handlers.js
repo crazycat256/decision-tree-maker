@@ -89,6 +89,7 @@ function moveSelectedNode(key, fastMode) {
     };
     
     if (movements[key]) {
+        saveState();
         movements[key]();
         updateTree();
         saveCurrentTree();
@@ -103,6 +104,10 @@ const KEY_HANDLERS = {
 const ARROW_KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
 
 document.addEventListener('keydown', (e) => {
+    if (e.target.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])')) {
+        return;
+    }
+
     if (e.ctrlKey || e.metaKey) {
         if (e.key === 'z' && !e.shiftKey) {
             e.preventDefault();

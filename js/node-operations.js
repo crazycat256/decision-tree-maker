@@ -86,7 +86,6 @@ function renameNodeInline(nodeElement, d) {
             const input = textContainer.select('input').node();
             if (input) {
                 const currentValue = input.value || 'Default';
-                d.text = currentValue;
                 
                 const newWidth = getNodeWidth(currentValue);
                 const nodeSelection = d3.select(nodeElement);
@@ -105,7 +104,13 @@ function renameNodeInline(nodeElement, d) {
                 nodeSelection.select('.spot-right')
                     .attr("cx", newWidth / 2);
                 
-                updateLinks();
+                const savedText = d.text;
+                try {
+                    d.text = currentValue;
+                    updateLinks();
+                } finally {
+                    d.text = savedText;
+                }
             }
         }
     );
