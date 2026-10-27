@@ -2,6 +2,8 @@
 
 A simple and intuitive web-based tool for creating and editing decision trees.
 
+Try it online: [https://decision-tree-maker.crazycat256.fr/](https://decision-tree-maker.crazycat256.fr/)
+
 ![Demo](demo.gif)
 
 ## Features
